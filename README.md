@@ -1,14 +1,14 @@
-# golang-errors
+# logutil
 
 Package based on package [errors](https://github.com/pkg/errors).
 
-[GoDoc](http://godoc.org/github.com/ruzulinjun/golang-errors)
+[GoDoc](http://godoc.org/github.com/ruzulinjun/logutil)
 
 ### Installation
 
 Install with
 
-    $ go get github.com/ruzulinjun/golang-errors
+    $ go get github.com/ruzulinjun/logutil
 
 ### Log Normalization
 
