@@ -14,8 +14,16 @@ import (
 
 type LogContextKey string
 
+/*
+...
+	logutil.AddLog(ctx, "validStatusChange", "n")
+...
+	log.Print(ctx.Value(logutil.LogContextKey("log")))
+...
+*/
+
 func AddLog(ctx context.Context, key string, value interface{}) {
-	log, ok := ctx.Value(LogContextKey("log")).(map[string]interface{})
+	log, ok := ctx.Value(LogContextKey("log")).(Fields)
 	if ok {
 		log[key] = value
 	}
@@ -25,7 +33,8 @@ type stackTracer interface {
 	StackTrace() errors.StackTrace
 }
 
-func SprintError(err error) []string {
+// get error's trace
+func Trace(err error) []string {
 	type causer interface {
 		Cause() error
 	}
@@ -56,15 +65,33 @@ func SprintError(err error) []string {
 
 type Fields map[string]interface{}
 
+/*
+add file name and function name automatically
+...
+	if err != nil {
+		return errors.Wrap(err, logutil.MarshalFields(logutil.Fields{"userID": userID}))
+	}
+...
+*/
 func MarshalFields(fields Fields) string {
-	_, file, line, _ := runtime.Caller(1)
+	pcs := make([]uintptr, 1)
+	runtime.Callers(2, pcs[:])
+	frame, _ := runtime.CallersFrames(pcs).Next()
+	file := frame.File
 	paths := strings.Split(file, "/")
 	begin := len(paths) - 4
 	if begin < 0 {
 		begin = 0
 	}
-	file = strings.Join(paths[begin:], "/")
-	fields["file"] = file + ":" + strconv.Itoa(line)
+	fields["file"] = strings.Join(paths[begin:], "/") + ":" + strconv.Itoa(frame.Line)
+	name := frame.Function
+	paths = strings.Split(name, "/")
+	begin = len(paths) - 5
+	if begin < 0 {
+		begin = 0
+	}
+	fields["name"] = strings.Join(paths[begin:], "/")
+
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
 	encoder.SetEscapeHTML(false)
