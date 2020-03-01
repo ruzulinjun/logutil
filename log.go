@@ -63,7 +63,7 @@ func Trace(err error) []string {
 	return nil
 }
 
-type Fields map[string]interface{}
+type Fields map[interface{}]interface{}
 
 /*
 add file name and function name automatically
