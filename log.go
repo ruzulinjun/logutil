@@ -22,7 +22,7 @@ type LogContextKey string
 ...
 */
 
-func AddLog(ctx context.Context, key string, value interface{}) {
+func AddLog(ctx context.Context, key, value interface{}) {
 	log, ok := ctx.Value(LogContextKey("log")).(Fields)
 	if ok {
 		log[key] = value
