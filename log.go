@@ -8,11 +8,14 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/pkg/errors"
 )
 
 type LogContextKey string
+
+var mutex sync.Mutex
 
 /*
 ...
@@ -22,10 +25,12 @@ type LogContextKey string
 ...
 */
 
-func AddLog(ctx context.Context, key, value interface{}) {
+func AddLog(ctx context.Context, key string, value interface{}) {
 	log, ok := ctx.Value(LogContextKey("log")).(Fields)
 	if ok {
+		mutex.Lock()
 		log[key] = value
+		mutex.Unlock()
 	}
 }
 
@@ -63,7 +68,7 @@ func Trace(err error) []string {
 	return nil
 }
 
-type Fields map[interface{}]interface{}
+type Fields map[string]interface{}
 
 /*
 add file name and function name automatically
